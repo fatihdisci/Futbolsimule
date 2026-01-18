@@ -12,16 +12,14 @@ const gameState = {
         score1: 0,
         score2: 0,
         interval: null,
-        ballPosition: 50, // 0 (Takım 1 Kale) - 100 (Takım 2 Kale)
-        possessionTeam: 1 // Top kimde?
+        ballPosition: 50, 
+        possessionTeam: 1 
     }
 };
 
-// Formasyon Koordinatları (Top: %Y, Left: %X)
-// Sahayı dikey (mobile) düşündüğümüz için: Top (Yukarıdan aşağı), Left (Soldan sağa)
 const formations = {
     "4-4-2": [
-        { role: "Kale", top: 90, left: 50 }, // GK
+        { role: "Kale", top: 90, left: 50 }, 
         { role: "Defans", top: 75, left: 20 }, { role: "Defans", top: 75, left: 40 }, { role: "Defans", top: 75, left: 60 }, { role: "Defans", top: 75, left: 80 },
         { role: "Orta Saha", top: 50, left: 20 }, { role: "Orta Saha", top: 50, left: 40 }, { role: "Orta Saha", top: 50, left: 60 }, { role: "Orta Saha", top: 50, left: 80 },
         { role: "Forvet", top: 25, left: 35 }, { role: "Forvet", top: 25, left: 65 }
@@ -40,7 +38,6 @@ const formations = {
     ]
 };
 
-// DOM Elementleri
 const els = {
     teamNameInput: document.getElementById('team-name-input'),
     formationBtns: document.querySelectorAll('.formation-btn'),
@@ -49,18 +46,16 @@ const els = {
     selectedCount: document.getElementById('selected-count'),
     teamRating: document.getElementById('team-rating'),
     gameStatus: document.getElementById('game-status'),
+    randomMatchBtn: document.getElementById('random-match-btn'), // YENİ
     
-    // Modal
     modal: document.getElementById('player-selection-modal'),
     modalList: document.getElementById('players-list-container'),
     modalTitle: document.getElementById('modal-position-title'),
     closeModalBtn: document.getElementById('close-modal-btn'),
 
-    // Ekranlar
     selectionScreen: document.getElementById('selection-screen'),
     matchScreen: document.getElementById('match-screen'),
 
-    // Maç
     startMatchBtn: document.getElementById('start-match-btn'),
     homeName: document.getElementById('home-team-name'),
     awayName: document.getElementById('away-team-name'),
@@ -88,31 +83,26 @@ function renderPitch() {
     const teamData = getCurrentTeamData();
     const formationData = formations[teamData.formation];
     
-    els.pitchContainer.innerHTML = ''; // Temizle
+    els.pitchContainer.innerHTML = ''; 
 
     formationData.forEach((pos, index) => {
         const player = teamData.players[index];
         const slot = document.createElement('div');
         
-        // Slot Stili (Dolu veya Boş)
         if (player) {
             slot.className = 'player-slot filled';
             slot.innerHTML = `
                 <span class="player-rating">${player.rating}</span>
                 <span class="player-name">${player.name}</span>
             `;
-            // Dolu slota tıklayınca silmek ister misin? (Şimdilik engelli, istersen ekleriz)
         } else {
             slot.className = 'player-slot empty';
             slot.innerHTML = `<span class="position-label">${pos.role}</span>`;
-            // Boş slota tıklama olayı
             slot.onclick = () => openPlayerModal(pos.role, index);
         }
 
-        // Konumlandırma
         slot.style.top = pos.top + '%';
         slot.style.left = pos.left + '%';
-        
         els.pitchContainer.appendChild(slot);
     });
 
@@ -123,7 +113,6 @@ function updateUIStats() {
     const teamData = getCurrentTeamData();
     const filledCount = teamData.players.filter(p => p !== null).length;
     
-    // Takım Gücü Hesapla (Ortalama)
     const totalRating = teamData.players.reduce((acc, p) => acc + (p ? p.rating : 0), 0);
     const avgRating = filledCount > 0 ? Math.round(totalRating / filledCount) : 0;
     teamData.rating = avgRating;
@@ -131,7 +120,6 @@ function updateUIStats() {
     els.selectedCount.textContent = filledCount;
     els.teamRating.textContent = avgRating;
 
-    // 11 kişi tamamlandıysa butonu aç
     if (filledCount === 11) {
         els.nextBtn.disabled = false;
         els.nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -145,27 +133,20 @@ function updateUIStats() {
 // ==========================================
 // 3. OYUNCU SEÇİMİ (MODAL)
 // ==========================================
-let currentSlotIndex = -1; // Hangi slotu dolduruyoruz?
+let currentSlotIndex = -1;
 
 function openPlayerModal(role, index) {
     currentSlotIndex = index;
     els.modalTitle.textContent = role;
-    els.modalList.innerHTML = ''; // Listeyi temizle
+    els.modalList.innerHTML = '';
 
-    // Veritabanından uygun oyuncuları filtrele
-    // Kural: 1. Mevkisi uymalı 2. Daha önce seçilmemiş olmalı (iki takımda da)
     const usedIds = [...gameState.team1.players, ...gameState.team2.players]
                     .filter(p => p !== null)
                     .map(p => p.id);
 
-    // Mevki eşleşmesi (Veritabanındaki "Kale", "Defans" vs. ile eşleşmeli)
-    // Kaleci hariç, yan mevkiler (Stoper-Bek ayrımı yok, hepsi Defans)
     let filteredPlayers = players.filter(p => p.position === role && !usedIds.includes(p.id));
-
-    // Güce göre sırala (En yüksek en üstte)
     filteredPlayers.sort((a, b) => b.rating - a.rating);
 
-    // Listeyi oluştur
     filteredPlayers.forEach(p => {
         const item = document.createElement('div');
         item.className = "flex justify-between items-center p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer border border-gray-700 transition-colors";
@@ -180,7 +161,6 @@ function openPlayerModal(role, index) {
         els.modalList.appendChild(item);
     });
 
-    // Modalı Aç
     els.modal.classList.remove('hidden');
     setTimeout(() => els.modal.classList.add('modal-active'), 10);
 }
@@ -188,7 +168,6 @@ function openPlayerModal(role, index) {
 function selectPlayer(player) {
     const teamData = getCurrentTeamData();
     teamData.players[currentSlotIndex] = player;
-    
     closeModal();
     renderPitch();
 }
@@ -199,57 +178,95 @@ function closeModal() {
 }
 
 // ==========================================
-// 4. SAYFA GEÇİŞLERİ
+// 4. RASTGELE MAÇ (YENİ ÖZELLİK)
+// ==========================================
+function setupRandomMatch() {
+    // Rastgele isimler
+    gameState.team1.name = "Rastgele United";
+    gameState.team2.name = "Rastgele City";
+    
+    // Rastgele Formasyon
+    const keys = Object.keys(formations);
+    gameState.team1.formation = keys[Math.floor(Math.random() * keys.length)];
+    gameState.team2.formation = keys[Math.floor(Math.random() * keys.length)];
+
+    // Takımları Otomatik Doldur
+    autoFillTeam(gameState.team1, []);
+    // İkinci takımı doldururken, birinci takımdakileri (usedIds) hariç tut
+    const usedIds = gameState.team1.players.map(p => p.id);
+    autoFillTeam(gameState.team2, usedIds);
+
+    // Maç ekranına git
+    prepareMatchScreen();
+    // Otomatik başlat (Opsiyonel, kullanıcı basınca başlasın istedik)
+}
+
+function autoFillTeam(teamObj, existingUsedIds) {
+    const formationRoles = formations[teamObj.formation];
+    
+    // Her slot için uygun oyuncu bul
+    formationRoles.forEach((slot, index) => {
+        // Zaten seçilmişleri kontrol et (Takım içi + Karşı takım)
+        const currentTeamIds = teamObj.players.filter(p => p).map(p => p.id);
+        const allUsedIds = [...existingUsedIds, ...currentTeamIds];
+
+        // O mevkiye uygun, kullanılmamış oyuncuları bul
+        const pool = players.filter(p => p.position === slot.role && !allUsedIds.includes(p.id));
+        
+        if (pool.length > 0) {
+            // Rastgele birini seç (En iyileri değil, rastgele olsun ki her maç farklı olsun)
+            // Ama biraz kalite olsun diye ilk 20'den seçelim
+            const subPool = pool.slice(0, 20); // Güce göre sıralı gelirse üstten al
+            // Veri sırasızsa rastgele al. Bizim veritabanı karışıktı, o yüzden tam random:
+            const randomPlayer = pool[Math.floor(Math.random() * pool.length)];
+            
+            teamObj.players[index] = randomPlayer;
+        } else {
+            // Yedek plan (Oyuncu kalmazsa)
+            console.warn("Oyuncu kalmadı:", slot.role);
+        }
+    });
+
+    // Güç hesapla
+    const totalRating = teamObj.players.reduce((acc, p) => acc + (p ? p.rating : 0), 0);
+    teamObj.rating = Math.round(totalRating / 11);
+}
+
+
+// ==========================================
+// 5. SAYFA GEÇİŞLERİ & MAÇ
 // ==========================================
 function setupEventListeners() {
-    // Formasyon Butonları
     els.formationBtns.forEach(btn => {
         btn.onclick = () => {
             els.formationBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
-            const newFormation = btn.dataset.formation;
-            getCurrentTeamData().formation = newFormation;
-            
-            // Formasyon değişince oyuncular sıfırlanmasın, sadece yerleri değişsin (Array indexi aynı kalır)
-            // Ancak slot sayısı değişirse (Forvet 2'den 3'e çıkarsa) mantık karışabilir.
-            // Basit tutmak için: Oyuncular korunur, yeni düzende render edilir.
+            gameState.currentTeam === 1 ? gameState.team1.formation = btn.dataset.formation : gameState.team2.formation = btn.dataset.formation;
             renderPitch();
         };
     });
 
-    // İsim Girişi
     els.teamNameInput.addEventListener('input', (e) => {
         getCurrentTeamData().name = e.target.value || (gameState.currentTeam === 1 ? "Takım 1" : "Takım 2");
     });
 
-    // İleri Butonu
     els.nextBtn.onclick = () => {
         if (gameState.currentTeam === 1) {
-            // Takım 2'ye geçiş
             gameState.currentTeam = 2;
-            
-            // UI Sıfırla
             els.teamNameInput.value = "";
             els.teamNameInput.placeholder = "2. Takım Adı";
             els.gameStatus.textContent = "2. Takım Kurulumu (Deplasman)";
             els.nextBtn.textContent = "MAÇ EKRANINA GEÇ >";
-            
-            // Formasyon butonlarını resetle
             els.formationBtns.forEach(b => b.classList.remove('active'));
-            els.formationBtns[0].classList.add('active'); // 4-4-2 default
-
-            renderPitch(); // Takım 2'nin boş sahasını çiz
+            els.formationBtns[0].classList.add('active');
+            renderPitch();
         } else {
-            // Maç Ekranına Geçiş
             prepareMatchScreen();
         }
     };
 
-    // Modal Kapat
+    els.randomMatchBtn.onclick = setupRandomMatch; // Butonu bağla
     els.closeModalBtn.onclick = closeModal;
-
-    // Maç Butonları
     els.startMatchBtn.onclick = startMatch;
     els.resetBtn.onclick = () => location.reload();
 }
@@ -257,107 +274,74 @@ function setupEventListeners() {
 function prepareMatchScreen() {
     els.selectionScreen.classList.add('hidden');
     els.matchScreen.classList.remove('hidden');
-    document.querySelector('header').style.display = 'none'; // Üst başlığı gizle, odak maçta olsun
+    document.querySelector('header').style.display = 'none';
 
-    // İsimleri ve Skorları Yerleştir
     els.homeName.textContent = gameState.team1.name;
     els.awayName.textContent = gameState.team2.name;
-    
-    // Butonu göster
     els.startMatchBtn.classList.remove('hidden');
     
     logCommentary("🎤 Spiker: Ve büyük maç için her şey hazır!", "neutral");
-    logCommentary(`🏟️ ${gameState.team1.name} ve ${gameState.team2.name} sahaya çıkıyor.`, "neutral");
+    logCommentary(`🏟️ ${gameState.team1.name} (Ort: ${gameState.team1.rating}) vs ${gameState.team2.name} (Ort: ${gameState.team2.rating})`, "neutral");
 }
 
-// ==========================================
-// 5. MAÇ SİMÜLASYON MOTORU
-// ==========================================
 function startMatch() {
     els.startMatchBtn.classList.add('hidden');
     gameState.match.time = 0;
-    
     logCommentary("⚽ HAKEM DÜDÜĞÜNÜ ÇALDI! MAÇ BAŞLADI!", "important");
-
-    gameState.match.interval = setInterval(gameLoop, 1000); // Her 1 saniye = 1 oyun dakikası (yaklaşık)
+    gameState.match.interval = setInterval(gameLoop, 1000); 
 }
 
 function gameLoop() {
-    gameState.match.time += 1; // Dakika ilerler
+    gameState.match.time += 1;
     els.timer.textContent = gameState.match.time + "'";
 
-    // 90 Dakika bitti mi?
     if (gameState.match.time > 90) {
         endMatch();
         return;
     }
 
-    // --- SİMÜLASYON MANTIĞI ---
-    
-    // 1. Rastgele Olay Belirle (Pas, Şut, Top Kaybı)
     const dice = Math.random();
+    const powerDiff = (gameState.team1.rating - gameState.team2.rating) / 200;
     
-    // Top kimde? (Possession)
-    // Takım gücüne göre topa sahip olma ihtimalini artır
-    const powerDiff = (gameState.team1.rating - gameState.team2.rating) / 200; // Örn: +0.05
-    const possessionChanceT1 = 0.5 + powerDiff;
-    
-    // Topun sahadaki konumu (Visualizer için)
-    // Eğer T1 atak yapıyorsa top 50'den 100'e doğru gider.
-    let currentAttacker = gameState.match.possessionTeam === 1 ? gameState.team1 : gameState.team2;
-    let currentDefender = gameState.match.possessionTeam === 1 ? gameState.team2 : gameState.team1;
-
-    // Her döngüde topun konumu ve sahibi değişebilir
-    if (Math.random() > 0.3) { // %70 ihtimalle top el değiştirmez, atak gelişir veya durur
-        // Atak yönünde ilerleme
+    if (Math.random() > 0.3) { 
         gameState.match.ballPosition += (gameState.match.possessionTeam === 1 ? 10 : -10);
     } else {
-        // Top kaybı!
         gameState.match.possessionTeam = gameState.match.possessionTeam === 1 ? 2 : 1;
-        logCommentary(`🔄 ${currentDefender.name} topu kazandı ve atağa kalkıyor.`, "neutral");
-        // Yön değişti
+        // Top değişince yorum yapmasın, çok spam oluyor.
     }
 
-    // Top sınırları (0-100)
     gameState.match.ballPosition = Math.max(0, Math.min(100, gameState.match.ballPosition));
     updateBallVisual();
 
-    // --- GOL POZİSYONU ---
-    // Eğer top bir kaleye çok yaklaştıysa (>90 veya <10)
     if (gameState.match.ballPosition > 90 && gameState.match.possessionTeam === 1) {
         attemptGoal(gameState.team1, gameState.team2);
     } else if (gameState.match.ballPosition < 10 && gameState.match.possessionTeam === 2) {
         attemptGoal(gameState.team2, gameState.team1);
     } else {
-        // Orta saha mücadelesi
-        if (dice < 0.1) {
+        if (dice < 0.15) {
+            const currentAttacker = gameState.match.possessionTeam === 1 ? gameState.team1 : gameState.team2;
             const randomPlayer = getRandomPlayer(currentAttacker);
-            logCommentary(`👟 ${randomPlayer.name} şık bir çalımla ilerliyor.`, "neutral");
+            logCommentary(`👟 ${randomPlayer.name} topla ilerliyor...`, "neutral");
         }
     }
 }
 
 function attemptGoal(attackerTeam, defenderTeam) {
-    // Gol şansı: Hücum Gücü vs Defans Şansı
-    // Basit bir RNG + Güç farkı
     const attackRoll = Math.random() * attackerTeam.rating;
     const defenseRoll = Math.random() * defenderTeam.rating;
 
-    // Gol oldu mu?
-    if (attackRoll > defenseRoll * 0.9) { // Defans biraz avantajlıdır
+    if (attackRoll > defenseRoll * 0.9) { 
         scoreGoal(attackerTeam);
     } else {
-        // Kaçtı
         const randomPlayer = getRandomPlayer(attackerTeam);
-        logCommentary(`❌ ${randomPlayer.name} vurdu ama top dışarı gitti!`, "danger");
-        // Top kaleciden başlar
+        logCommentary(`❌ ${randomPlayer.name} şutunu çekti ama top dışarıda!`, "danger");
         gameState.match.ballPosition = gameState.match.possessionTeam === 1 ? 100 : 0; 
-        gameState.match.possessionTeam = gameState.match.possessionTeam === 1 ? 2 : 1; // Top rakibe geçer
+        gameState.match.possessionTeam = gameState.match.possessionTeam === 1 ? 2 : 1; 
     }
 }
 
 function scoreGoal(team) {
-    const scorer = getRandomPlayer(team, "Forvet"); // Genelde forvet atar
+    const scorer = getRandomPlayer(team, "Forvet"); 
     
     if (team === gameState.team1) {
         gameState.match.score1++;
@@ -367,9 +351,7 @@ function scoreGoal(team) {
         els.awayScore.textContent = gameState.match.score2;
     }
 
-    logCommentary(`⚽ GOOOOOL!!! ${scorer.name} harika bir gol atıyor! (${team.name})`, "goal");
-    
-    // Gol sonrası santra (Top ortaya gelir)
+    logCommentary(`⚽ GOOOOOL!!! ${scorer.name} ağları havalandırıyor! (${team.name})`, "goal");
     gameState.match.ballPosition = 50;
     gameState.match.possessionTeam = team === gameState.team1 ? 2 : 1;
 }
@@ -381,17 +363,8 @@ function endMatch() {
     els.resetBtn.classList.remove('hidden');
 }
 
-// ==========================================
-// YARDIMCI FONKSİYONLAR
-// ==========================================
 function updateBallVisual() {
-    // Topun soldan yüzdesi (0-100)
-    // Görselde saha yatay değil, biz CSS ile topu hareket ettiriyoruz.
-    // CSS'de left: %50 sabit, top değişiyor gibi değil; yatay bir bar yaptık.
-    // Mini saha yataydı.
     els.ballVisual.style.left = gameState.match.ballPosition + '%';
-    
-    // Topun rengini topa sahip olana göre hafif değiştirebiliriz
     if(gameState.match.possessionTeam === 1) {
         els.ballVisual.classList.add('bg-yellow-400');
         els.ballVisual.classList.remove('bg-blue-400');
@@ -404,26 +377,26 @@ function updateBallVisual() {
 function getRandomPlayer(team, positionFilter = null) {
     let validPlayers = team.players.filter(p => p !== null);
     if (positionFilter) {
-        // O mevki varsa oradan seç, yoksa rastgele seç
         const posPlayers = validPlayers.filter(p => p.position === positionFilter);
         if (posPlayers.length > 0) validPlayers = posPlayers;
     }
-    return validPlayers[Math.floor(Math.random() * validPlayers.length)] || {name: "Bilinmeyen Oyuncu"};
+    return validPlayers[Math.floor(Math.random() * validPlayers.length)] || {name: "Bilinmeyen"};
 }
 
 function logCommentary(text, type) {
     const p = document.createElement('div');
     p.textContent = `${gameState.match.time}' ${text}`;
     
-    // Renklendirme
     if (type === 'goal') p.className = "text-green-400 font-bold text-lg border-l-4 border-green-500 pl-2 my-1";
     else if (type === 'danger') p.className = "text-red-400";
     else if (type === 'important') p.className = "text-accentGold font-bold";
-    else p.className = "text-gray-400"; // neutral
+    else p.className = "text-gray-400"; 
 
     els.commentary.appendChild(p);
-    els.commentary.scrollTop = els.commentary.scrollHeight; // Otomatik aşağı kaydır
+    
+    // YENİ: Otomatik kaydırma ama kullanıcı yukarı kaydırdıysa zorlamıyoruz
+    // Basit çözüm: Her zaman en alta at, kullanıcı tutarsa durur.
+    els.commentary.scrollTop = els.commentary.scrollHeight;
 }
 
-// Uygulamayı Başlat
 init();
