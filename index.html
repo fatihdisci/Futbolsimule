@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pro Futbol Simülasyonu 2025</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Teko:wght@500;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        game: ['Teko', 'sans-serif'],
+                    },
+                    colors: {
+                        gameDark: '#121212', // Koyu arka plan
+                        gamePanel: '#1e293b', // Panel rengi
+                        pitchGreen: '#059669', // Saha yeşili
+                        accentGold: '#fbbf24' // Vurgu rengi (Altın sarısı)
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gameDark text-gray-100 min-h-screen overflow-hidden select-none">
+
+    <div id="app-container" class="max-w-md mx-auto h-screen flex flex-col relative">
+
+        <header class="p-4 text-center border-b border-gray-800 bg-gamePanel/50 backdrop-blur-md relative z-10">
+            <h1 class="text-3xl font-game font-bold text-accentGold tracking-wider uppercase drop-shadow-lg">Ultimate Match Sim</h1>
+            <p id="game-status" class="text-sm text-gray-400">Kadro Kurulum Aşaması</p>
+        </header>
+
+        <section id="selection-screen" class="flex-1 flex flex-col p-4 overflow-y-auto">
+
+            <div class="mb-4 bg-gamePanel p-3 rounded-xl border border-gray-700 shadow-lg">
+                 <label class="block text-sm text-accentGold font-semibold mb-1">Takım Adı:</label>
+                <input type="text" id="team-name-input" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-center font-bold focus:border-accentGold outline-none transition-colors" placeholder="Takımının Adını Gir">
+            </div>
+
+            <div class="mb-4 flex justify-center space-x-2">
+                <button data-formation="4-4-2" class="formation-btn active">4-4-2</button>
+                <button data-formation="4-3-3" class="formation-btn">4-3-3</button>
+                <button data-formation="3-5-2" class="formation-btn">3-5-2</button>
+            </div>
+
+            <div id="pitch-container" class="football-pitch relative flex-1 w-full rounded-2xl overflow-hidden border-4 border-gray-800 shadow-2xl mx-auto mb-4" style="max-height: 60vh; aspect-ratio: 2/3;">
+                <div class="pitch-lines"></div>
+                <div id="player-slots-layer" class="absolute inset-0 z-10">
+                    </div>
+            </div>
+
+            <div class="mt-auto pb-4">
+                <div class="flex justify-between text-sm mb-3 px-2 font-semibold">
+                    <span class="text-gray-400">Seçilen: <span id="selected-count" class="text-accentGold">0</span>/11</span>
+                    <span class="text-gray-400">Takım Gücü: <span id="team-rating" class="text-accentGold text-lg">0</span></span>
+                </div>
+                <button id="next-stage-btn" class="w-full py-3 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-game text-2xl font-bold rounded-xl shadow-lg transform active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    SIRADAKİ AŞAMA >
+                </button>
+            </div>
+
+        </section>
+
+        <section id="match-screen" class="hidden flex-1 flex flex-col p-4">
+            <div class="bg-gamePanel p-4 rounded-2xl border border-gray-700 shadow-xl mb-4">
+                <div class="flex justify-between items-center text-center">
+                    <div class="w-1/3">
+                        <h2 id="home-team-name" class="font-bold text-lg text-gray-300 truncate">Takım 1</h2>
+                        <div id="home-score" class="text-5xl font-game font-bold text-white">0</div>
+                    </div>
+                    <div class="w-1/3 flex flex-col items-center justify-center">
+                        <span id="match-time" class="text-xl font-mono text-accentGold bg-gray-900 px-3 py-1 rounded-md border border-accentGold/30">0'</span>
+                        <span class="text-xs text-gray-500 mt-1">CANLI</span>
+                    </div>
+                    <div class="w-1/3">
+                        <h2 id="away-team-name" class="font-bold text-lg text-gray-300 truncate">Takım 2</h2>
+                        <div id="away-score" class="text-5xl font-game font-bold text-white">0</div>
+                    </div>
+                </div>
+            </div>
+
+             <div class="mini-pitch relative h-32 bg-pitchGreen/80 rounded-xl border-2 border-gray-700 mb-4 overflow-hidden flex items-center justify-center">
+                 <div class="absolute w-full h-0.5 bg-white/30 top-1/2"></div> <div id="ball-visual" class="w-4 h-4 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.8)] absolute transition-all duration-500 ease-in-out" style="left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+             </div>
+
+            <div class="flex-1 bg-gray-950 rounded-xl border border-gray-800 p-3 relative overflow-hidden">
+                 <div class="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-gray-950 to-transparent z-10"></div>
+                <div id="commentary-log" class="h-full overflow-y-auto space-y-2 text-sm font-mono p-2 pt-6 scroll-smooth">
+                    <p class="text-gray-500">Maç başlamak üzere...</p>
+                </div>
+                 <div class="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-gray-950 to-transparent z-10"></div>
+            </div>
+
+             <button id="start-match-btn" class="w-full mt-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-game text-2xl font-bold rounded-xl shadow-lg transform active:scale-95 transition-all hidden">
+                MAÇI BAŞLAT
+            </button>
+             <button id="reset-btn" class="w-full mt-4 py-3 bg-gradient-to-r from-red-600 to-red-500 text-white font-game text-2xl font-bold rounded-xl shadow-lg transform active:scale-95 transition-all hidden">
+                YENİ MAÇ OYNA
+            </button>
+
+        </section>
+
+
+        <div id="player-selection-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
+            <div class="bg-gamePanel w-full max-w-md rounded-t-2xl sm:rounded-2xl border border-gray-700 shadow-2xl max-h-[80vh] flex flex-col transform transition-transform duration-300 translate-y-full sm:translate-y-0 sm:scale-95">
+                <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900/50 rounded-t-2xl">
+                    <h3 class="text-lg font-bold text-white"><span id="modal-position-title" class="text-accentGold">Forvet</span> Seç</h3>
+                    <button id="close-modal-btn" class="text-gray-400 hover:text-white p-2 bg-gray-800 rounded-full">✕</button>
+                </div>
+                <div id="players-list-container" class="overflow-y-auto p-2 flex-1 space-y-2 custom-scrollbar">
+                    </div>
+            </div>
+        </div>
+
+    </div> <script src="database.js"></script> </body>
+</html>
