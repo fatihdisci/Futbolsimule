@@ -1,145 +1,958 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Master Character & Scene Engine</title>
-    <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; --panel: #ffffff; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); padding: 20px; color: #1e293b; }
-        .container { max-width: 1100px; margin: auto; display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-        .panel { background: var(--panel); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        h2 { font-size: 1.2rem; margin-top: 0; color: var(--primary); border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 0.9rem; }
-        .output-container { display: flex; flex-direction: column; gap: 15px; }
-        #finalPrompt { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 0.85rem; white-space: pre-wrap; min-height: 400px; overflow-y: auto; }
-        .btn { cursor: pointer; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; transition: 0.2s; width: 100%; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: #1d4ed8; }
-        .btn-copy { background: #10b981; color: white; margin-top: 10px; }
-        .btn-copy:hover { background: #059669; }
-        .tag { display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-top: 5px; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Advanced Character Registry & Scene Engine</title>
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f172a;
+      --panel2:#111c33;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --primary:#2563eb;
+      --primary2:#1d4ed8;
+      --ok:#10b981;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --border:#1f2a44;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 800px at 15% 10%, rgba(37,99,235,.20), transparent 55%),
+                  radial-gradient(1000px 700px at 90% 20%, rgba(16,185,129,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+
+    header{
+      max-width:1200px;
+      margin:24px auto 10px;
+      padding:0 16px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+    }
+    header h1{
+      margin:0;
+      font-size:1.15rem;
+      letter-spacing:.2px;
+    }
+    header p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:.9rem;
+    }
+
+    .wrap{
+      max-width:1200px;
+      margin:0 auto 40px;
+      padding:0 16px;
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap:16px;
+    }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .panel .hd{
+      padding:14px 14px 12px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background: rgba(255,255,255,.02);
+    }
+    .panel .hd h2{
+      font-size:1rem;
+      margin:0;
+      color:#dbeafe;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .panel .bd{ padding:14px; }
+
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .stack{ display:flex; flex-direction:column; gap:10px; }
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+    label{ font-size:.8rem; color:#cbd5e1; display:block; margin:0 0 6px; font-weight:600; }
+    input, select, textarea{
+      width:100%;
+      background: rgba(255,255,255,.02);
+      color:var(--text);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px 10px;
+      outline:none;
+      font-size:.92rem;
+    }
+    textarea{ min-height:90px; resize:vertical; }
+
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(37,99,235,.7);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.18);
+    }
+
+    .help{
+      font-size:.78rem;
+      color:var(--muted);
+      line-height:1.35;
+    }
+
+    .btn{
+      border:none;
+      border-radius:10px;
+      padding:10px 12px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.15s;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      user-select:none;
+      color: white;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn-primary{ background: var(--primary); }
+    .btn-primary:hover{ background: var(--primary2); }
+    .btn-ok{ background: var(--ok); }
+    .btn-ok:hover{ filter:brightness(.95); }
+    .btn-warn{ background: var(--warn); color:#111827; }
+    .btn-danger{ background: var(--danger); }
+    .btn-ghost{
+      background: rgba(255,255,255,.05);
+      border:1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-ghost:hover{ background: rgba(255,255,255,.08); }
+
+    .pill{
+      font-size:.72rem;
+      padding:4px 8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      color: #cbd5e1;
+      background: rgba(255,255,255,.03);
+      white-space:nowrap;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .list-item{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.02);
+      border-radius:12px;
+      padding:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .list-item strong{ font-size:.92rem; }
+    .list-item small{ color:var(--muted); display:block; margin-top:2px; }
+
+    .prompt{
+      background:#071022;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:14px;
+      font-family:var(--mono);
+      font-size:.86rem;
+      white-space:pre-wrap;
+      min-height:420px;
+      max-height:520px;
+      overflow:auto;
+      line-height:1.35;
+    }
+
+    .top-tools{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .toast{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      background: rgba(17,24,39,.92);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      display:none;
+      max-width:340px;
+      z-index:50;
+    }
+    .toast.show{ display:block; }
+
+    .kbd{
+      font-family:var(--mono);
+      font-size:.78rem;
+      color:#cbd5e1;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.02);
+      padding:2px 6px;
+      border-radius:8px;
+    }
+
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns:1fr; }
+      header{ align-items:flex-start; flex-direction:column; }
+      .top-tools{ justify-content:flex-start; }
+      .prompt{ min-height:360px; }
+    }
+  </style>
 </head>
+
 <body>
+<header>
+  <div>
+    <h1>🧠 Advanced Character Registry & Scene Engine</h1>
+    <p>Çoklu karakter ve senaryo kayıt, prompt şablonları, export/import, otomatik kaydetme.</p>
+  </div>
+  <div class="top-tools">
+    <button class="btn btn-ghost" id="btnExport">⬇️ Export JSON</button>
+    <label class="btn btn-ghost" style="cursor:pointer">
+      ⬆️ Import JSON
+      <input id="fileImport" type="file" accept="application/json" hidden>
+    </label>
+    <button class="btn btn-danger" id="btnReset">🧨 Sıfırla</button>
+  </div>
+</header>
 
-<div class="container">
-    <div class="panel">
-        <h2>👤 Karakter Kartı</h2>
-        <div class="input-group">
+<div class="wrap">
+  <!-- LEFT: Character Registry -->
+  <section class="panel" aria-label="Karakter Kayıt Paneli">
+    <div class="hd">
+      <h2>👤 Karakter Kayıt</h2>
+      <span class="pill" id="activeCharPill">Aktif: -</span>
+    </div>
+
+    <div class="bd stack">
+      <div class="stack">
+        <div>
+          <label>Karakter Adı (kayıt adı)</label>
+          <input id="char_name" placeholder="Örn: Mina v1" />
+        </div>
+
+        <div class="grid2">
+          <div>
             <label>Etnik Köken & Yaş</label>
-            <input type="text" id="char_basic" value="East Asian, 25 years old" oninput="updatePrompt()">
-        </div>
-        <div class="input-group">
+            <input id="char_basic" value="East Asian, 25 years old" />
+          </div>
+          <div>
             <label>Vücut Tipi</label>
-            <input type="text" id="char_body" value="Slim, defined waist, natural proportions" oninput="updatePrompt()">
+            <input id="char_body" value="Slim, defined waist, natural proportions" />
+          </div>
         </div>
-        <div class="input-group">
+
+        <div class="grid2">
+          <div>
             <label>Saç Modeli & Rengi</label>
-            <input type="text" id="char_hair" value="Waist-length, straight with curled ends, medium brown" oninput="updatePrompt()">
-        </div>
-        <div class="input-group">
+            <input id="char_hair" value="Waist-length, straight with curled ends, medium brown" />
+          </div>
+          <div>
             <label>Cilt Tonu & Detay</label>
-            <input type="text" id="char_skin" value="Light neutral tone, authentic skin texture, no makeup" oninput="updatePrompt()">
-        </div>
-        <p style="font-size: 0.7rem; color: #64748b;">* Bu bilgiler tüm sahnelerde sabit kalacaktır.</p>
-    </div>
-
-    <div class="output-container">
-        <div class="panel">
-            <h2>🎬 Dinamik Senaryo Ayarları</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div class="input-group">
-                    <label>Mekan / Eylem</label>
-                    <select id="scene" onchange="updatePrompt()">
-                        <option value="Mirror selfie in a bedroom computer corner, blue color tones.">Ayna Selfiesi (Mavi Oda)</option>
-                        <option value="Sitting on a messy bed, sunlight hitting her face, holding a paperback book.">Yatakta Kitap Okuma</option>
-                        <option value="In a cozy kitchen, pouring tea into a ceramic mug, steam rising.">Mutfakta Çay Keyfi</option>
-                        <option value="Leaning against a window with rain droplets, looking thoughtful.">Yağmurlu Pencere Önü</option>
-                        <option value="Working on a laptop at a cluttered wooden desk with plants.">Çalışma Masasında Konsantre</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Kıyafet</label>
-                    <select id="clothing" onchange="updatePrompt()">
-                        <option value="Blue cropped knit cardigan, denim shorts, striped over-the-knee socks.">Mavi Hırka & Denim Şort</option>
-                        <option value="Oversized grey hoodie and comfortable black leggings.">Oversize Hoodie & Tayt</option>
-                        <option value="White summer cotton dress with thin straps.">Beyaz Yazlık Elbise</option>
-                        <option value="Silk pajama set in sage green.">İpek Pijama Takımı</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Işık & Atmosfer</label>
-                    <select id="light" onchange="updatePrompt()">
-                        <option value="Natural daylight, soft shadows, 5200K white balance.">Doğal Gün Işığı (5200K)</option>
-                        <option value="Warm golden hour light, long orange shadows.">Golden Hour (Sıcak)</option>
-                        <option value="Nighttime, cool blue moonlight mixed with warm lamp light.">Gece (Ay Işığı & Lamba)</option>
-                        <option value="Overcast, moody gray lighting, high realism.">Bulutlu / Karamsar</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Kamera / Lens</label>
-                    <select id="camera" onchange="updatePrompt()">
-                        <option value="Smartphone camera, 26mm, wide depth of field, candid.">Smartphone (Geniş Açı)</option>
-                        <option value="35mm vintage film, slight grain, RAW photo style.">35mm Film (Nostaljik)</option>
-                        <option value="85mm portrait lens, f/1.8, soft bokeh background.">85mm Portre (Arka Plan Bulanık)</option>
-                    </select>
-                </div>
-            </div>
+            <input id="char_skin" value="Light neutral tone, authentic skin texture, no makeup" />
+          </div>
         </div>
 
-        <div class="panel" style="background: #0f172a;">
-            <div id="finalPrompt"></div>
-            <button class="btn btn-copy" onclick="copyPrompt()">Promptu Kopyala 📋</button>
+        <div>
+          <label>Ek Notlar (opsiyonel)</label>
+          <textarea id="char_notes" placeholder="Örn: minimal accessories, no visible brands, natural look"></textarea>
+          <div class="help">Bu alan prompta “Notes” olarak eklenir. Boş bırakabilirsin.</div>
         </div>
+
+        <div class="row">
+          <button class="btn btn-ok" id="btnSaveChar">💾 Karakteri Kaydet</button>
+          <button class="btn btn-ghost" id="btnNewChar">➕ Yeni</button>
+          <button class="btn btn-ghost" id="btnDuplicateChar">🧬 Çoğalt</button>
+          <button class="btn btn-danger" id="btnDeleteChar">🗑️ Sil</button>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:6px 0">
+
+      <div class="stack">
+        <div class="row" style="justify-content:space-between">
+          <div class="help">
+            Kayıtlı karakterler:
+            <span class="kbd">tıkla → aktif olur</span>
+          </div>
+          <input id="charSearch" style="max-width:160px" placeholder="Ara..." />
+        </div>
+
+        <div class="list" id="charList"></div>
+      </div>
     </div>
+  </section>
+
+  <!-- RIGHT: Scene + Prompt -->
+  <section class="panel" aria-label="Senaryo ve Prompt Paneli">
+    <div class="hd">
+      <h2>🎬 Senaryo Motoru</h2>
+      <span class="pill" id="activeScenePill">Senaryo: -</span>
+    </div>
+
+    <div class="bd stack">
+      <div class="grid2">
+        <div>
+          <label>Senaryo Preset</label>
+          <select id="scenePreset"></select>
+          <div class="help">Bir preset seç veya aşağıdan düzenleyip kaydet.</div>
+        </div>
+        <div>
+          <label>Prompt Şablonu</label>
+          <select id="templateSelect">
+            <option value="structured">Structured (bölümlü)</option>
+            <option value="singleline">Single Line (tek satır)</option>
+            <option value="mj">Midjourney-ish (kısa + negatif)</option>
+          </select>
+          <div class="help">İhtiyacına göre prompt formatı değişir.</div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label>Mekan / Eylem</label>
+          <textarea id="scene_desc">Mirror selfie in a bedroom computer corner, blue color tones.</textarea>
+        </div>
+        <div>
+          <label>Atmosfer (sabit)</label>
+          <textarea id="scene_atmo">Real, lived-in, secular home environment.</textarea>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label>Kıyafet</label>
+          <input id="scene_clothing" value="Blue cropped knit cardigan, denim shorts, striped over-the-knee socks." />
+        </div>
+        <div>
+          <label>Işık & Atmosfer</label>
+          <input id="scene_light" value="Natural daylight, soft shadows, 5200K white balance." />
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label>Kamera / Lens</label>
+          <input id="scene_camera" value="Smartphone camera, 26mm, wide depth of field, candid." />
+        </div>
+        <div>
+          <label>Stil / Kalite</label>
+          <input id="scene_style" value="Extremely realistic, 8k, high skin texture, no filters, raw photography." />
+        </div>
+      </div>
+
+      <div>
+        <label>Negative Prompts</label>
+        <textarea id="scene_negative">Pink/magenta lighting, CGI, 3D render, anime, cartoon, beauty filters, plastic skin, distorted limbs, logos, NSFW.</textarea>
+        <div class="help">İstersen burada “artifact, extra fingers…” gibi şeyleri de ekleyebilirsin.</div>
+      </div>
+
+      <div class="row">
+        <button class="btn btn-ok" id="btnSaveScene">💾 Senaryoyu Kaydet</button>
+        <button class="btn btn-ghost" id="btnNewScene">➕ Yeni Senaryo</button>
+        <button class="btn btn-danger" id="btnDeleteScene">🗑️ Senaryoyu Sil</button>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:6px 0">
+
+      <div class="row" style="justify-content:space-between">
+        <div class="help">Çıktı prompt:</div>
+        <div class="row">
+          <button class="btn btn-primary" id="btnCopy">📋 Kopyala</button>
+          <button class="btn btn-ghost" id="btnSnapshot">🧾 Prompt Snapshot</button>
+        </div>
+      </div>
+
+      <div id="finalPrompt" class="prompt" aria-label="Üretilen Prompt"></div>
+
+      <div class="help">
+        İpucu: Karakter veya senaryo alanlarında değişiklik yaptığında prompt otomatik güncellenir.
+      </div>
+    </div>
+  </section>
 </div>
 
-<script>
-    function updatePrompt() {
-        const cBasic = document.getElementById('char_basic').value;
-        const cBody = document.getElementById('char_body').value;
-        const cHair = document.getElementById('char_hair').value;
-        const cSkin = document.getElementById('char_skin').value;
-        
-        const scene = document.getElementById('scene').value;
-        const clothing = document.getElementById('clothing').value;
-        const light = document.getElementById('light').value;
-        const camera = document.getElementById('camera').value;
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-        const prompt = `### 1. Scene & Environment
-* Description: ${scene}
-* Atmosphere: Real, lived-in, secular home environment.
+<script>
+  /********************
+   * Simple Data Layer
+   ********************/
+  const STORAGE_KEY = "acse_v1";
+
+  const uid = () => crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random().toString(16).slice(2);
+
+  const defaultState = () => ({
+    version: 1,
+    activeCharId: null,
+    activeSceneId: null,
+    promptSnapshots: [], // {id, ts, title, text}
+    characters: [
+      {
+        id: uid(),
+        name: "Default Character",
+        basic: "East Asian, 25 years old",
+        body: "Slim, defined waist, natural proportions",
+        hair: "Waist-length, straight with curled ends, medium brown",
+        skin: "Light neutral tone, authentic skin texture, no makeup",
+        notes: ""
+      }
+    ],
+    scenes: [
+      {
+        id: uid(),
+        name: "Blue Room Mirror Selfie",
+        desc: "Mirror selfie in a bedroom computer corner, blue color tones.",
+        atmo: "Real, lived-in, secular home environment.",
+        clothing: "Blue cropped knit cardigan, denim shorts, striped over-the-knee socks.",
+        light: "Natural daylight, soft shadows, 5200K white balance.",
+        camera: "Smartphone camera, 26mm, wide depth of field, candid.",
+        style: "Extremely realistic, 8k, high skin texture, no filters, raw photography.",
+        negative: "Pink/magenta lighting, CGI, 3D render, anime, cartoon, beauty filters, plastic skin, distorted limbs, logos, NSFW."
+      }
+    ]
+  });
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return null;
+      const s = JSON.parse(raw);
+      if(!s || typeof s !== "object") return null;
+      return s;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  let state = loadState() || defaultState();
+
+  // Ensure actives
+  if(!state.activeCharId) state.activeCharId = state.characters[0]?.id || null;
+  if(!state.activeSceneId) state.activeSceneId = state.scenes[0]?.id || null;
+
+  /********************
+   * DOM Helpers
+   ********************/
+  const $ = (id) => document.getElementById(id);
+
+  const toastEl = $("toast");
+  let toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1800);
+  }
+
+  function safeName(name, fallback){
+    const n = (name || "").trim();
+    return n.length ? n : fallback;
+  }
+
+  function currentChar(){
+    return state.characters.find(c => c.id === state.activeCharId) || null;
+  }
+  function currentScene(){
+    return state.scenes.find(s => s.id === state.activeSceneId) || null;
+  }
+
+  /********************
+   * Rendering
+   ********************/
+  function renderCharacterList(){
+    const q = ($("charSearch").value || "").toLowerCase().trim();
+    const list = $("charList");
+    list.innerHTML = "";
+
+    const items = state.characters
+      .filter(c => !q || (c.name || "").toLowerCase().includes(q) || (c.basic||"").toLowerCase().includes(q))
+      .map(c => {
+        const active = c.id === state.activeCharId;
+        const div = document.createElement("div");
+        div.className = "list-item";
+        div.style.outline = active ? "2px solid rgba(37,99,235,.55)" : "none";
+
+        const left = document.createElement("div");
+        left.style.minWidth = "0";
+        left.innerHTML = `
+          <strong>${escapeHtml(c.name)}</strong>
+          <small>${escapeHtml(c.basic)}</small>
+        `;
+
+        const right = document.createElement("div");
+        right.innerHTML = `<span class="pill">${active ? "Aktif" : "Seç"}</span>`;
+
+        div.appendChild(left);
+        div.appendChild(right);
+
+        div.addEventListener("click", () => {
+          state.activeCharId = c.id;
+          saveState();
+          fillCharacterForm();
+          renderCharacterList();
+          updatePrompt();
+          toast("Karakter seçildi.");
+        });
+
+        return div;
+      });
+
+    if(items.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "help";
+      empty.textContent = "Eşleşen karakter yok.";
+      list.appendChild(empty);
+      return;
+    }
+    items.forEach(x => list.appendChild(x));
+  }
+
+  function renderScenePresets(){
+    const sel = $("scenePreset");
+    sel.innerHTML = "";
+    state.scenes.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s.id;
+      opt.textContent = s.name;
+      sel.appendChild(opt);
+    });
+    sel.value = state.activeSceneId || "";
+  }
+
+  function updatePills(){
+    const c = currentChar();
+    const s = currentScene();
+    $("activeCharPill").textContent = "Aktif: " + (c ? c.name : "-");
+    $("activeScenePill").textContent = "Senaryo: " + (s ? s.name : "-");
+  }
+
+  function fillCharacterForm(){
+    const c = currentChar();
+    if(!c) return;
+    $("char_name").value = c.name || "";
+    $("char_basic").value = c.basic || "";
+    $("char_body").value = c.body || "";
+    $("char_hair").value = c.hair || "";
+    $("char_skin").value = c.skin || "";
+    $("char_notes").value = c.notes || "";
+    updatePills();
+  }
+
+  function fillSceneForm(){
+    const s = currentScene();
+    if(!s) return;
+    $("scenePreset").value = s.id;
+    $("scene_desc").value = s.desc || "";
+    $("scene_atmo").value = s.atmo || "";
+    $("scene_clothing").value = s.clothing || "";
+    $("scene_light").value = s.light || "";
+    $("scene_camera").value = s.camera || "";
+    $("scene_style").value = s.style || "";
+    $("scene_negative").value = s.negative || "";
+    updatePills();
+  }
+
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  /********************
+   * Prompt Templates
+   ********************/
+  function buildPrompt(template){
+    const c = currentChar();
+    const s = currentScene();
+    if(!c || !s) return "Karakter veya senaryo seçili değil.";
+
+    const notes = (c.notes || "").trim();
+    const notesBlock = notes ? `\n* Notes: ${notes}` : "";
+
+    if(template === "singleline"){
+      // Tek satır: üretim modellerinde hızlı kullanım
+      return [
+        `${s.desc}`,
+        `${s.atmo}`,
+        `Subject: ${c.basic}; ${c.body}; Hair: ${c.hair}; Skin: ${c.skin}${notes ? "; Notes: "+notes : ""}`,
+        `Outfit: ${s.clothing}`,
+        `Lighting: ${s.light}`,
+        `Camera: ${s.camera}`,
+        `Style: ${s.style}`,
+        `Negative: ${s.negative}`
+      ].join(" | ");
+    }
+
+    if(template === "mj"){
+      // Midjourney-ish kısa: ana prompt + --no benzeri negatif
+      // (MJ parametrelerini bilerek eklemiyorum; kullanıcı isterse eklenebilir)
+      return [
+        `${s.desc}`,
+        `(${s.atmo})`,
+        `${c.basic}, ${c.body}, ${c.hair}, ${c.skin}${notes ? ", "+notes : ""}`,
+        `${s.clothing}`,
+        `${s.light}`,
+        `${s.camera}`,
+        `${s.style}`,
+        `--no ${s.negative}`
+      ].join(", ");
+    }
+
+    // structured default
+    return `### 1. Scene & Environment
+* Description: ${s.desc}
+* Atmosphere: ${s.atmo}
 
 ### 2. Subject (SAVED CHARACTER)
-* Identity: ${cBasic}
-* Body: ${cBody}
-* Hair: ${cHair}
-* Skin: ${cSkin}
+* Identity: ${c.basic}
+* Body: ${c.body}
+* Hair: ${c.hair}
+* Skin: ${c.skin}${notesBlock}
 
 ### 3. Clothing & Details
-* Outfit: ${clothing}
+* Outfit: ${s.clothing}
 
 ### 4. Technical Specs
-* Lighting: ${light}
-* Camera: ${camera}
-* Style: Extremely realistic, 8k, high skin texture, no filters, raw photography.
+* Lighting: ${s.light}
+* Camera: ${s.camera}
+* Style: ${s.style}
 
 ### 5. Negative Prompts
-* (Anti-Styles): Pink/magenta lighting, CGI, 3D render, anime, cartoon, beauty filters, plastic skin, distorted limbs, logos, NSFW.`;
+* (Anti-Styles): ${s.negative}`;
+  }
 
-        document.getElementById('finalPrompt').innerText = prompt;
+  function updatePrompt(){
+    const t = $("templateSelect").value;
+    $("finalPrompt").textContent = buildPrompt(t);
+    saveState();
+  }
+
+  /********************
+   * Character Actions
+   ********************/
+  function saveCharacterFromForm(){
+    const c = currentChar();
+    if(!c){
+      toast("Aktif karakter bulunamadı.");
+      return;
+    }
+    c.name = safeName($("char_name").value, "Unnamed Character");
+    c.basic = $("char_basic").value.trim();
+    c.body  = $("char_body").value.trim();
+    c.hair  = $("char_hair").value.trim();
+    c.skin  = $("char_skin").value.trim();
+    c.notes = $("char_notes").value.trim();
+
+    saveState();
+    renderCharacterList();
+    updatePills();
+    updatePrompt();
+    toast("Karakter kaydedildi.");
+  }
+
+  function newCharacter(){
+    const id = uid();
+    const c = {
+      id,
+      name: "New Character",
+      basic: "East Asian, 25 years old",
+      body: "Slim, natural proportions",
+      hair: "Long hair",
+      skin: "Natural skin texture, no makeup",
+      notes: ""
+    };
+    state.characters.unshift(c);
+    state.activeCharId = id;
+    saveState();
+    fillCharacterForm();
+    renderCharacterList();
+    updatePrompt();
+    toast("Yeni karakter oluşturuldu.");
+  }
+
+  function duplicateCharacter(){
+    const c = currentChar();
+    if(!c) return;
+    const id = uid();
+    const clone = JSON.parse(JSON.stringify(c));
+    clone.id = id;
+    clone.name = safeName(c.name, "Character") + " (copy)";
+    state.characters.unshift(clone);
+    state.activeCharId = id;
+    saveState();
+    fillCharacterForm();
+    renderCharacterList();
+    updatePrompt();
+    toast("Karakter çoğaltıldı.");
+  }
+
+  function deleteCharacter(){
+    const c = currentChar();
+    if(!c) return;
+    if(state.characters.length <= 1){
+      toast("En az 1 karakter kalmalı.");
+      return;
+    }
+    state.characters = state.characters.filter(x => x.id !== c.id);
+    state.activeCharId = state.characters[0].id;
+    saveState();
+    fillCharacterForm();
+    renderCharacterList();
+    updatePrompt();
+    toast("Karakter silindi.");
+  }
+
+  /********************
+   * Scene Actions
+   ********************/
+  function saveSceneFromForm(){
+    const s = currentScene();
+    if(!s){
+      toast("Aktif senaryo bulunamadı.");
+      return;
     }
 
-    function copyPrompt() {
-        const text = document.getElementById('finalPrompt').innerText;
-        navigator.clipboard.writeText(text);
-        alert("Prompt kopyalandı! Midjourney veya Flux'a yapıştırabilirsin.");
-    }
+    // isim kuralı: açıklamadan türet + kullanıcı isterse sonra export/import ile yönetebilir
+    const base = $("scene_desc").value.trim().slice(0, 42);
+    s.name = safeName(s.name, base || "Scene Preset");
+    s.desc = $("scene_desc").value.trim();
+    s.atmo = $("scene_atmo").value.trim();
+    s.clothing = $("scene_clothing").value.trim();
+    s.light = $("scene_light").value.trim();
+    s.camera = $("scene_camera").value.trim();
+    s.style = $("scene_style").value.trim();
+    s.negative = $("scene_negative").value.trim();
 
-    window.onload = updatePrompt;
+    saveState();
+    renderScenePresets();
+    fillSceneForm();
+    updatePrompt();
+    toast("Senaryo kaydedildi.");
+  }
+
+  function newScene(){
+    const id = uid();
+    const s = {
+      id,
+      name: "New Scene",
+      desc: "Leaning against a window with rain droplets, looking thoughtful.",
+      atmo: "Real, lived-in, secular home environment.",
+      clothing: "Oversized grey hoodie and comfortable black leggings.",
+      light: "Overcast, moody gray lighting, high realism.",
+      camera: "35mm vintage film, slight grain, RAW photo style.",
+      style: "Extremely realistic, 8k, high skin texture, no filters, raw photography.",
+      negative: "CGI, 3D render, anime, cartoon, beauty filters, plastic skin, distorted limbs, logos, NSFW."
+    };
+    state.scenes.unshift(s);
+    state.activeSceneId = id;
+    saveState();
+    renderScenePresets();
+    fillSceneForm();
+    updatePrompt();
+    toast("Yeni senaryo oluşturuldu.");
+  }
+
+  function deleteScene(){
+    const s = currentScene();
+    if(!s) return;
+    if(state.scenes.length <= 1){
+      toast("En az 1 senaryo kalmalı.");
+      return;
+    }
+    state.scenes = state.scenes.filter(x => x.id !== s.id);
+    state.activeSceneId = state.scenes[0].id;
+    saveState();
+    renderScenePresets();
+    fillSceneForm();
+    updatePrompt();
+    toast("Senaryo silindi.");
+  }
+
+  /********************
+   * Copy + Snapshot
+   ********************/
+  async function copyPrompt(){
+    const text = $("finalPrompt").textContent || "";
+    try{
+      await navigator.clipboard.writeText(text);
+      toast("Prompt kopyalandı.");
+    }catch(e){
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      toast("Prompt kopyalandı (fallback).");
+    }
+  }
+
+  function snapshotPrompt(){
+    const text = $("finalPrompt").textContent || "";
+    const c = currentChar();
+    const s = currentScene();
+    const title = `${c?.name || "Character"} × ${s?.name || "Scene"} (${new Date().toLocaleString("tr-TR")})`;
+    state.promptSnapshots.unshift({ id: uid(), ts: Date.now(), title, text });
+    // çok şişmesin:
+    state.promptSnapshots = state.promptSnapshots.slice(0, 30);
+    saveState();
+    toast("Snapshot alındı (localStorage).");
+  }
+
+  /********************
+   * Export / Import / Reset
+   ********************/
+  function exportJson(){
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "acse-export.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("Export indirildi.");
+  }
+
+  async function importJson(file){
+    try{
+      const text = await file.text();
+      const obj = JSON.parse(text);
+      // minimal doğrulama
+      if(!obj || !Array.isArray(obj.characters) || !Array.isArray(obj.scenes)){
+        toast("JSON formatı uyumsuz.");
+        return;
+      }
+      state = obj;
+      if(!state.activeCharId) state.activeCharId = state.characters[0]?.id || null;
+      if(!state.activeSceneId) state.activeSceneId = state.scenes[0]?.id || null;
+
+      saveState();
+      // re-render
+      renderScenePresets();
+      fillCharacterForm();
+      fillSceneForm();
+      renderCharacterList();
+      updatePrompt();
+      toast("Import tamamlandı.");
+    }catch(e){
+      toast("Import başarısız: JSON okunamadı.");
+    }
+  }
+
+  function resetAll(){
+    localStorage.removeItem(STORAGE_KEY);
+    state = defaultState();
+    state.activeCharId = state.characters[0]?.id || null;
+    state.activeSceneId = state.scenes[0]?.id || null;
+    saveState();
+
+    renderScenePresets();
+    fillCharacterForm();
+    fillSceneForm();
+    renderCharacterList();
+    updatePrompt();
+    toast("Sıfırlandı.");
+  }
+
+  /********************
+   * Wire Events
+   ********************/
+  function wireAutoUpdate(ids){
+    ids.forEach(id => {
+      const el = $(id);
+      if(!el) return;
+      el.addEventListener("input", () => {
+        // form değişince prompt canlı güncellensin
+        // karakter mi sahne mi olduğuna göre state'e yazmak yerine:
+        // burada sadece promptu güncelliyoruz (kaydet butonu kalıyor).
+        updatePrompt();
+      });
+    });
+  }
+
+  // Character form input IDs
+  wireAutoUpdate(["char_basic","char_body","char_hair","char_skin","char_notes","scene_desc","scene_atmo","scene_clothing","scene_light","scene_camera","scene_style","scene_negative"]);
+
+  $("templateSelect").addEventListener("change", updatePrompt);
+
+  $("btnSaveChar").addEventListener("click", saveCharacterFromForm);
+  $("btnNewChar").addEventListener("click", newCharacter);
+  $("btnDuplicateChar").addEventListener("click", duplicateCharacter);
+  $("btnDeleteChar").addEventListener("click", deleteCharacter);
+  $("charSearch").addEventListener("input", renderCharacterList);
+
+  $("scenePreset").addEventListener("change", () => {
+    state.activeSceneId = $("scenePreset").value;
+    saveState();
+    fillSceneForm();
+    updatePrompt();
+    toast("Senaryo seçildi.");
+  });
+
+  $("btnSaveScene").addEventListener("click", saveSceneFromForm);
+  $("btnNewScene").addEventListener("click", newScene);
+  $("btnDeleteScene").addEventListener("click", deleteScene);
+
+  $("btnCopy").addEventListener("click", copyPrompt);
+  $("btnSnapshot").addEventListener("click", snapshotPrompt);
+
+  $("btnExport").addEventListener("click", exportJson);
+  $("fileImport").addEventListener("change", (e) => {
+    const f = e.target.files?.[0];
+    if(f) importJson(f);
+    e.target.value = "";
+  });
+
+  $("btnReset").addEventListener("click", resetAll);
+
+  // Scene preset select after initial render: fill
+  function init(){
+    renderScenePresets();
+    fillCharacterForm();
+    fillSceneForm();
+    renderCharacterList();
+    updatePrompt();
+    toast("Hazır.");
+  }
+  init();
 </script>
-
 </body>
 </html>
