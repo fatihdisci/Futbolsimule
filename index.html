@@ -82,6 +82,34 @@
             </div>
 
             <div class="form-section">
+              <div class="section-title" style="color:#f472b6">✨ Karakter Tutarlılığı (Önemli)</div>
+              <div class="form-group full-width">
+                <label>Referans Görsel URL'si (--cref)</label>
+                <input type="text" data-field="refImage"
+                  placeholder="Karakterin en iyi görselinin linkini yapıştırın (https://...)"
+                  style="border-color:#f472b6">
+                <p class="text-muted text-small mt-2" style="font-size:0.75rem">
+                  💡 <strong>İpucu:</strong> Kıyafet değiştirmek için beğendiğiniz bir yüzün linkini buraya yapıştırın
+                  ve aşağıdaki ayarı <strong>Sadece Yüz</strong> yapın.
+                </p>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Benzerlik Gücü (--cw)</label>
+                  <select class="preset-select" data-field="refWeight">
+                    <option value="0">0 - Sadece Yüz (Kıyafet Değişsin) ✨</option>
+                    <option value="100">100 - Tam Kopya (Yüz+Kıyafet)</option>
+                    <option value="50">50 - Dengeli</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Sabit Seed (--seed)</label>
+                  <input type="text" data-field="seed" placeholder="Rastgelelik sayısı...">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
               <div class="section-title">Temel Özellikler</div>
               <div class="form-grid">
                 <div class="form-group">

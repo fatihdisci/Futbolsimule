@@ -322,9 +322,12 @@ const App = {
             }
         });
 
-        // Textarea değişiklikleri - canlı prompt güncelleme
+        // Input ve Textarea değişiklikleri - canlı prompt güncelleme
         document.addEventListener('input', (e) => {
-            if (e.target.tagName === 'TEXTAREA' && e.target.dataset.field) {
+            const isInput = e.target.tagName === 'INPUT' && e.target.type === 'text';
+            const isTextarea = e.target.tagName === 'TEXTAREA';
+
+            if ((isInput || isTextarea) && e.target.dataset.field) {
                 // Karakter verisini güncelle
                 const char = this.getActiveChar();
                 if (char) {

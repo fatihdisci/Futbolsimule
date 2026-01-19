@@ -26,6 +26,11 @@ const Storage = {
             name: 'Varsayılan Karakter',
             createdAt: Date.now(),
 
+            // Tutarlılık
+            refImage: '',
+            refWeight: '0',
+            seed: '',
+
             // Temel
             ethnicity: 'East Asian',
             age: '25-28 years old',

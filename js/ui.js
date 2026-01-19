@@ -144,6 +144,11 @@ const UI = {
 
         // Tüm alanları topla
         const fields = {
+            // Tutarlılık
+            refImage: char.refImage || '',
+            refWeight: char.refWeight || '0',
+            seed: char.seed || '',
+
             // Temel
             ethnicity: char.ethnicity || '',
             age: char.age || '',
@@ -204,7 +209,14 @@ const UI = {
 
     // Structured format
     buildStructuredPrompt(f) {
-        let prompt = `### 1. Subject - Identity & Body
+        let prompt = '';
+
+        // Tutarlılık notu
+        if (f.refImage) {
+            prompt += `> **CONSISTENCY NOTE:** Use Character Reference Image: ${f.refImage} (Weight: ${f.refWeight})\n\n`;
+        }
+
+        prompt += `### 1. Subject - Identity & Body
 * Ethnicity: ${f.ethnicity}
 * Age: ${f.age}
 * Body Type: ${f.bodyType}
@@ -256,12 +268,16 @@ const UI = {
             prompt += `\n\n### 9. Additional Notes\n* ${f.customNotes}`;
         }
 
+        // Seed
+        if (f.seed) prompt += `\n\nSeed: ${f.seed}`;
+
         return prompt;
     },
 
     // Single line format
     buildSingleLinePrompt(f) {
         const parts = [
+            f.refImage ? `[IMG: ${f.refImage}]` : '',
             f.action,
             f.location,
             f.atmosphere,
@@ -284,6 +300,7 @@ const UI = {
 
         let prompt = parts.join(' | ');
         prompt += ` | Negative: ${f.negativePrompt}`;
+        if (f.seed) prompt += ` | Seed: ${f.seed}`;
 
         return prompt;
     },
@@ -312,7 +329,17 @@ const UI = {
         ].filter(p => p && p.trim());
 
         let prompt = parts.join(', ');
+
+        // Parametreler en sona
         prompt += ` --no ${f.negativePrompt}`;
+
+        // Consistency params
+        if (f.refImage) {
+            prompt += ` --cref ${f.refImage}`;
+            if (f.refWeight) prompt += ` --cw ${f.refWeight}`;
+        }
+
+        if (f.seed) prompt += ` --seed ${f.seed}`;
 
         return prompt;
     },
