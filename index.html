@@ -1,113 +1,125 @@
 <!DOCTYPE html>
-<html lang="tr" class="dark">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Ultimate Match Sim Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Teko:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'], game: ['Teko', 'sans-serif'] },
-                    colors: { gameDark: '#0f172a', gamePanel: '#1e293b', accentGold: '#f59e0b' }
-                }
-            }
-        }
-    </script>
+    <title>Profesyonel Karakter Sahne Motoru</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #ececec; color: #333; padding: 40px; line-height: 1.6; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; font-size: 24px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: #555; }
+        select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; }
+        .output-box { margin-top: 30px; background: #f8f9fa; border: 2px dashed #cbd5e0; padding: 20px; border-radius: 10px; position: relative; }
+        #finalPrompt { font-size: 13px; color: #444; white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; }
+        .copy-btn { display: block; width: 100%; padding: 15px; background: #3182ce; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.2s; }
+        .copy-btn:hover { background: #2b6cb0; }
+        .badge { background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-size: 11px; float: right; }
+    </style>
 </head>
-<body class="bg-gameDark text-white h-screen overflow-hidden select-none">
+<body>
 
-    <div id="app-container" class="max-w-md mx-auto h-full flex flex-col relative bg-slate-950 shadow-2xl">
-        
-        <header class="pt-10 pb-4 px-4 text-center bg-gamePanel/40 backdrop-blur-lg border-b border-white/10 relative z-20">
-            <h1 class="text-4xl font-game font-bold text-accentGold tracking-tighter uppercase italic">ULTIMATE MATCH</h1>
-            <p id="game-status" class="text-[10px] text-blue-400 font-bold tracking-widest uppercase opacity-80">Simulation Engine v1.0</p>
-        </header>
+<div class="container">
+    <h1>🎭 Sabit Karakter & Detaylı Sahne Motoru</h1>
+    <p style="text-align: center; font-size: 14px; color: #666;">Karakter özellikleri (Doğu Asyalı, Kahverengi Saç, Slim) sabitlenmiştir.</p>
 
-        <section id="selection-screen" class="flex-1 flex flex-col p-5 overflow-hidden">
-            
-            <button id="random-match-btn" class="w-full mb-6 py-4 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl font-game text-2xl shadow-xl shadow-purple-900/20 border border-white/20 active:scale-95 transition-all">
-                🎲 RASTGELE MAÇ SİMÜLE ET
-            </button>
+    <div class="grid">
+        <div>
+            <label>🏠 Ortam / Senaryo</label>
+            <select id="scene" onchange="generate()">
+                <option value="Living Room: Relaxing on a beige linen sofa, surrounded by indoor plants and books.">Oturma Odası: Kanepede Dinlenme</option>
+                <option value="Kitchen: Making artisan coffee at a wooden counter, soft morning sun.">Mutfak: Kahve Hazırlama</option>
+                <option value="Study Corner: Reading a thick law book under a warm desk lamp.">Çalışma Köşesi: Kitap Okuma</option>
+                <option value="Balcony: Standing by the railing at dusk, city lights in the background.">Balkon: Gün Batımı</option>
+                <option value="Mirror Selfie: Bedroom computer corner, blue color tones.">Ayna Selfiesi: Bilgisayar Köşesi (Mavi)</option>
+            </select>
+        </div>
 
-            <div class="flex-1 flex flex-col min-h-0">
-                <div class="mb-4 flex gap-2">
-                    <input type="text" id="team-name-input" class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-accentGold outline-none" placeholder="Takım Adı Gir...">
-                    <div class="flex bg-white/5 rounded-xl p-1 border border-white/10">
-                        <button data-formation="4-4-2" class="formation-btn active text-xs px-3 py-1 rounded-lg">442</button>
-                        <button data-formation="4-3-3" class="formation-btn text-xs px-3 py-1 rounded-lg">433</button>
-                    </div>
-                </div>
+        <div>
+            <label>👕 Kıyafet Seçimi</label>
+            <select id="clothing" onchange="generate()">
+                <option value="Light blue cropped knit cardigan, denim ultra-short shorts, striped socks.">Mavi Hırka & Denim Şort</option>
+                <option value="Oversized white linen shirt, comfortable grey lounge shorts.">Oversize Keten Gömlek & Şort</option>
+                <option value="Simple black turtleneck sweater, high-waisted beige trousers.">Siyah Boğazlı Kazak & Kumaş Pantolon</option>
+                <option value="Floral summer dress, thin straps, natural fabric.">Yazlık Elbise (Doğal Dokulu)</option>
+            </select>
+        </div>
 
-                <div id="pitch-container" class="football-pitch relative flex-1 w-full rounded-3xl overflow-hidden border border-white/10 shadow-inner shadow-black/50">
-                    <div class="pitch-lines"></div>
-                    <div id="player-slots-layer" class="absolute inset-0 z-10"></div>
-                </div>
-            </div>
+        <div>
+            <label>☀️ Işık Kalitesi</label>
+            <select id="light" onchange="generate()">
+                <option value="Soft diffused daylight through sheer curtains, 5200K.">Yumuşak Gün Işığı (Tül Perde)</option>
+                <option value="Golden hour warmth, low sun angle, long shadows.">Golden Hour (Altın Saat)</option>
+                <option value="Moody indoor lighting, single warm lamp, high contrast.">Loş Işık (Tek Lamba)</option>
+                <option value="Overcast day, flat and extremely natural skin tones.">Bulutlu Hava (En Doğal Ten)</option>
+            </select>
+        </div>
 
-            <div class="mt-4 pt-4 border-t border-white/5 flex flex-col gap-3">
-                <div class="flex justify-between items-end">
-                    <div>
-                        <p class="text-[10px] text-gray-500 uppercase font-bold">Kadro Durumu</p>
-                        <p class="text-xl font-game"><span id="selected-count" class="text-accentGold">0</span> <span class="text-gray-600">/ 11</span></p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] text-gray-500 uppercase font-bold">Takım Reytingi</p>
-                        <p id="team-rating" class="text-3xl font-game text-white leading-none">0</p>
-                    </div>
-                </div>
-                <button id="next-stage-btn" class="w-full py-4 bg-white text-black font-game text-2xl rounded-2xl disabled:opacity-20 transition-all shadow-lg" disabled>SIRADAKİ ADIM</button>
-            </div>
-        </section>
-
-        <section id="match-screen" class="hidden flex-1 flex flex-col p-5">
-            <div class="bg-white/5 rounded-3xl p-6 border border-white/10 mb-6">
-                <div class="flex justify-between items-center text-center">
-                    <div class="flex-1">
-                        <p id="home-team-name" class="text-[10px] uppercase text-gray-400 font-bold mb-1">EV SAHİBİ</p>
-                        <p id="home-score" class="text-6xl font-game leading-none">0</p>
-                    </div>
-                    <div class="px-4">
-                        <div id="match-time" class="bg-accentGold text-black font-mono font-bold px-3 py-1 rounded-full text-sm">00'</div>
-                    </div>
-                    <div class="flex-1">
-                        <p id="away-team-name" class="text-[10px] uppercase text-gray-400 font-bold mb-1">DEPLASMAN</p>
-                        <p id="away-score" class="text-6xl font-game leading-none">0</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mini-pitch relative h-24 bg-emerald-900/50 rounded-2xl border border-white/5 mb-6 overflow-hidden">
-                <div class="absolute inset-0 flex items-center justify-center opacity-20"><div class="w-px h-full bg-white"></div><div class="absolute w-12 h-12 border border-white rounded-full"></div></div>
-                <div id="ball-visual" class="w-3 h-3 bg-white rounded-full absolute shadow-[0_0_15px_white] transition-all duration-500" style="left:50%; top:50%;"></div>
-            </div>
-
-            <div id="commentary-log" class="flex-1 bg-black/40 rounded-3xl p-6 font-mono text-xs overflow-y-auto space-y-3 border border-white/5 text-gray-400">
-                <p>Sistem Hazırlanıyor...</p>
-            </div>
-
-            <div class="pt-6 pb-2">
-                <button id="start-match-btn" class="w-full py-5 bg-blue-600 rounded-2xl font-game text-3xl shadow-xl shadow-blue-900/30">MAÇI BAŞLAT</button>
-                <button id="reset-btn" class="hidden w-full py-5 bg-white/10 rounded-2xl font-game text-3xl">YENİ OYUN</button>
-            </div>
-        </section>
-
-        <div id="player-selection-modal" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 hidden opacity-0 transition-opacity duration-300 pointer-events-none">
-            <div class="h-full flex flex-col pt-20">
-                <div class="px-6 pb-6 flex justify-between items-end">
-                    <h3 id="modal-position-title" class="text-5xl font-game text-white uppercase italic">FORVET</h3>
-                    <button id="close-modal-btn" class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-2xl">✕</button>
-                </div>
-                <div id="players-list-container" class="flex-1 overflow-y-auto px-4 pb-10 space-y-2"></div>
-            </div>
+        <div>
+            <label>📷 Kamera / Lens</label>
+            <select id="camera" onchange="generate()">
+                <option value="Smartphone rear camera, 26mm equivalent, deep depth of field.">Akıllı Telefon (Geniş Açı)</option>
+                <option value="35mm film camera, slight grain, authentic vintage texture.">35mm Film Kamera (Nostaljik)</option>
+                <option value="DSLR, 50mm f/1.8, slight natural background blur.">DSLR (50mm Portre)</option>
+            </select>
         </div>
     </div>
 
-    <script src="database.js"></script>
-    <script src="app.js"></script>
+    <div class="output-box">
+        <span class="badge">Hazır Prompt</span>
+        <div id="finalPrompt"></div>
+    </div>
+
+    <button class="copy-btn" onclick="copyPrompt()">Promptu Kopyala 📋</button>
+</div>
+
+<script>
+    function generate() {
+        const scene = document.getElementById('scene').value;
+        const clothing = document.getElementById('clothing').value;
+        const light = document.getElementById('light').value;
+        const camera = document.getElementById('camera').value;
+
+        const fixedSubject = `### Subject
+* Gender: Female, Age: 25
+* Ethnicity: East Asian
+* Body: Slim, defined waist, natural proportions, light neutral skin tone
+* Hair: Waist-length, straight with curled ends, medium brown color
+* Face: No makeup, authentic skin texture, pores visible`;
+
+        const negative = `### Negative Prompts
+* Any pink/magenta tones, beauty filters, over-smoothed skin
+* Exaggerated anatomy, CGI feel, illustration, NSFW, logos`;
+
+        const prompt = `### Scene
+${scene}
+
+${fixedSubject}
+
+### Clothing
+* ${clothing}
+
+### Lighting
+* ${light}
+
+### Camera & Style
+* ${camera}
+* Technical: Extremely realistic, candid, 8k resolution, raw photo style
+
+${negative}`;
+
+        document.getElementById('finalPrompt').innerText = prompt;
+    }
+
+    function copyPrompt() {
+        const text = document.getElementById('finalPrompt').innerText;
+        navigator.clipboard.writeText(text);
+        alert("Prompt başarıyla kopyalandı! Artık AI aracına yapıştırabilirsin.");
+    }
+
+    // İlk açılışta oluştur
+    window.onload = generate;
+</script>
+
 </body>
 </html>
