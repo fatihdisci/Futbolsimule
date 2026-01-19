@@ -2,111 +2,132 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Profesyonel Karakter Sahne Motoru</title>
+    <title>Master Character & Scene Engine</title>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #ececec; color: #333; padding: 40px; line-height: 1.6; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #2c3e50; font-size: 24px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        label { font-weight: bold; display: block; margin-bottom: 5px; color: #555; }
-        select, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; }
-        .output-box { margin-top: 30px; background: #f8f9fa; border: 2px dashed #cbd5e0; padding: 20px; border-radius: 10px; position: relative; }
-        #finalPrompt { font-size: 13px; color: #444; white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; }
-        .copy-btn { display: block; width: 100%; padding: 15px; background: #3182ce; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.2s; }
-        .copy-btn:hover { background: #2b6cb0; }
-        .badge { background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-size: 11px; float: right; }
+        :root { --primary: #2563eb; --bg: #f8fafc; --panel: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); padding: 20px; color: #1e293b; }
+        .container { max-width: 1100px; margin: auto; display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        .panel { background: var(--panel); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        h2 { font-size: 1.2rem; margin-top: 0; color: var(--primary); border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 0.9rem; }
+        .output-container { display: flex; flex-direction: column; gap: 15px; }
+        #finalPrompt { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 0.85rem; white-space: pre-wrap; min-height: 400px; overflow-y: auto; }
+        .btn { cursor: pointer; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; transition: 0.2s; width: 100%; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-copy { background: #10b981; color: white; margin-top: 10px; }
+        .btn-copy:hover { background: #059669; }
+        .tag { display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🎭 Sabit Karakter & Detaylı Sahne Motoru</h1>
-    <p style="text-align: center; font-size: 14px; color: #666;">Karakter özellikleri (Doğu Asyalı, Kahverengi Saç, Slim) sabitlenmiştir.</p>
-
-    <div class="grid">
-        <div>
-            <label>🏠 Ortam / Senaryo</label>
-            <select id="scene" onchange="generate()">
-                <option value="Living Room: Relaxing on a beige linen sofa, surrounded by indoor plants and books.">Oturma Odası: Kanepede Dinlenme</option>
-                <option value="Kitchen: Making artisan coffee at a wooden counter, soft morning sun.">Mutfak: Kahve Hazırlama</option>
-                <option value="Study Corner: Reading a thick law book under a warm desk lamp.">Çalışma Köşesi: Kitap Okuma</option>
-                <option value="Balcony: Standing by the railing at dusk, city lights in the background.">Balkon: Gün Batımı</option>
-                <option value="Mirror Selfie: Bedroom computer corner, blue color tones.">Ayna Selfiesi: Bilgisayar Köşesi (Mavi)</option>
-            </select>
+    <div class="panel">
+        <h2>👤 Karakter Kartı</h2>
+        <div class="input-group">
+            <label>Etnik Köken & Yaş</label>
+            <input type="text" id="char_basic" value="East Asian, 25 years old" oninput="updatePrompt()">
         </div>
-
-        <div>
-            <label>👕 Kıyafet Seçimi</label>
-            <select id="clothing" onchange="generate()">
-                <option value="Light blue cropped knit cardigan, denim ultra-short shorts, striped socks.">Mavi Hırka & Denim Şort</option>
-                <option value="Oversized white linen shirt, comfortable grey lounge shorts.">Oversize Keten Gömlek & Şort</option>
-                <option value="Simple black turtleneck sweater, high-waisted beige trousers.">Siyah Boğazlı Kazak & Kumaş Pantolon</option>
-                <option value="Floral summer dress, thin straps, natural fabric.">Yazlık Elbise (Doğal Dokulu)</option>
-            </select>
+        <div class="input-group">
+            <label>Vücut Tipi</label>
+            <input type="text" id="char_body" value="Slim, defined waist, natural proportions" oninput="updatePrompt()">
         </div>
-
-        <div>
-            <label>☀️ Işık Kalitesi</label>
-            <select id="light" onchange="generate()">
-                <option value="Soft diffused daylight through sheer curtains, 5200K.">Yumuşak Gün Işığı (Tül Perde)</option>
-                <option value="Golden hour warmth, low sun angle, long shadows.">Golden Hour (Altın Saat)</option>
-                <option value="Moody indoor lighting, single warm lamp, high contrast.">Loş Işık (Tek Lamba)</option>
-                <option value="Overcast day, flat and extremely natural skin tones.">Bulutlu Hava (En Doğal Ten)</option>
-            </select>
+        <div class="input-group">
+            <label>Saç Modeli & Rengi</label>
+            <input type="text" id="char_hair" value="Waist-length, straight with curled ends, medium brown" oninput="updatePrompt()">
         </div>
-
-        <div>
-            <label>📷 Kamera / Lens</label>
-            <select id="camera" onchange="generate()">
-                <option value="Smartphone rear camera, 26mm equivalent, deep depth of field.">Akıllı Telefon (Geniş Açı)</option>
-                <option value="35mm film camera, slight grain, authentic vintage texture.">35mm Film Kamera (Nostaljik)</option>
-                <option value="DSLR, 50mm f/1.8, slight natural background blur.">DSLR (50mm Portre)</option>
-            </select>
+        <div class="input-group">
+            <label>Cilt Tonu & Detay</label>
+            <input type="text" id="char_skin" value="Light neutral tone, authentic skin texture, no makeup" oninput="updatePrompt()">
         </div>
+        <p style="font-size: 0.7rem; color: #64748b;">* Bu bilgiler tüm sahnelerde sabit kalacaktır.</p>
     </div>
 
-    <div class="output-box">
-        <span class="badge">Hazır Prompt</span>
-        <div id="finalPrompt"></div>
-    </div>
+    <div class="output-container">
+        <div class="panel">
+            <h2>🎬 Dinamik Senaryo Ayarları</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="input-group">
+                    <label>Mekan / Eylem</label>
+                    <select id="scene" onchange="updatePrompt()">
+                        <option value="Mirror selfie in a bedroom computer corner, blue color tones.">Ayna Selfiesi (Mavi Oda)</option>
+                        <option value="Sitting on a messy bed, sunlight hitting her face, holding a paperback book.">Yatakta Kitap Okuma</option>
+                        <option value="In a cozy kitchen, pouring tea into a ceramic mug, steam rising.">Mutfakta Çay Keyfi</option>
+                        <option value="Leaning against a window with rain droplets, looking thoughtful.">Yağmurlu Pencere Önü</option>
+                        <option value="Working on a laptop at a cluttered wooden desk with plants.">Çalışma Masasında Konsantre</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Kıyafet</label>
+                    <select id="clothing" onchange="updatePrompt()">
+                        <option value="Blue cropped knit cardigan, denim shorts, striped over-the-knee socks.">Mavi Hırka & Denim Şort</option>
+                        <option value="Oversized grey hoodie and comfortable black leggings.">Oversize Hoodie & Tayt</option>
+                        <option value="White summer cotton dress with thin straps.">Beyaz Yazlık Elbise</option>
+                        <option value="Silk pajama set in sage green.">İpek Pijama Takımı</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Işık & Atmosfer</label>
+                    <select id="light" onchange="updatePrompt()">
+                        <option value="Natural daylight, soft shadows, 5200K white balance.">Doğal Gün Işığı (5200K)</option>
+                        <option value="Warm golden hour light, long orange shadows.">Golden Hour (Sıcak)</option>
+                        <option value="Nighttime, cool blue moonlight mixed with warm lamp light.">Gece (Ay Işığı & Lamba)</option>
+                        <option value="Overcast, moody gray lighting, high realism.">Bulutlu / Karamsar</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Kamera / Lens</label>
+                    <select id="camera" onchange="updatePrompt()">
+                        <option value="Smartphone camera, 26mm, wide depth of field, candid.">Smartphone (Geniş Açı)</option>
+                        <option value="35mm vintage film, slight grain, RAW photo style.">35mm Film (Nostaljik)</option>
+                        <option value="85mm portrait lens, f/1.8, soft bokeh background.">85mm Portre (Arka Plan Bulanık)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
 
-    <button class="copy-btn" onclick="copyPrompt()">Promptu Kopyala 📋</button>
+        <div class="panel" style="background: #0f172a;">
+            <div id="finalPrompt"></div>
+            <button class="btn btn-copy" onclick="copyPrompt()">Promptu Kopyala 📋</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    function generate() {
+    function updatePrompt() {
+        const cBasic = document.getElementById('char_basic').value;
+        const cBody = document.getElementById('char_body').value;
+        const cHair = document.getElementById('char_hair').value;
+        const cSkin = document.getElementById('char_skin').value;
+        
         const scene = document.getElementById('scene').value;
         const clothing = document.getElementById('clothing').value;
         const light = document.getElementById('light').value;
         const camera = document.getElementById('camera').value;
 
-        const fixedSubject = `### Subject
-* Gender: Female, Age: 25
-* Ethnicity: East Asian
-* Body: Slim, defined waist, natural proportions, light neutral skin tone
-* Hair: Waist-length, straight with curled ends, medium brown color
-* Face: No makeup, authentic skin texture, pores visible`;
+        const prompt = `### 1. Scene & Environment
+* Description: ${scene}
+* Atmosphere: Real, lived-in, secular home environment.
 
-        const negative = `### Negative Prompts
-* Any pink/magenta tones, beauty filters, over-smoothed skin
-* Exaggerated anatomy, CGI feel, illustration, NSFW, logos`;
+### 2. Subject (SAVED CHARACTER)
+* Identity: ${cBasic}
+* Body: ${cBody}
+* Hair: ${cHair}
+* Skin: ${cSkin}
 
-        const prompt = `### Scene
-${scene}
+### 3. Clothing & Details
+* Outfit: ${clothing}
 
-${fixedSubject}
+### 4. Technical Specs
+* Lighting: ${light}
+* Camera: ${camera}
+* Style: Extremely realistic, 8k, high skin texture, no filters, raw photography.
 
-### Clothing
-* ${clothing}
-
-### Lighting
-* ${light}
-
-### Camera & Style
-* ${camera}
-* Technical: Extremely realistic, candid, 8k resolution, raw photo style
-
-${negative}`;
+### 5. Negative Prompts
+* (Anti-Styles): Pink/magenta lighting, CGI, 3D render, anime, cartoon, beauty filters, plastic skin, distorted limbs, logos, NSFW.`;
 
         document.getElementById('finalPrompt').innerText = prompt;
     }
@@ -114,11 +135,10 @@ ${negative}`;
     function copyPrompt() {
         const text = document.getElementById('finalPrompt').innerText;
         navigator.clipboard.writeText(text);
-        alert("Prompt başarıyla kopyalandı! Artık AI aracına yapıştırabilirsin.");
+        alert("Prompt kopyalandı! Midjourney veya Flux'a yapıştırabilirsin.");
     }
 
-    // İlk açılışta oluştur
-    window.onload = generate;
+    window.onload = updatePrompt;
 </script>
 
 </body>
